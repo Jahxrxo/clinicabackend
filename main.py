@@ -5,7 +5,7 @@ from routes import auth, usuarios, roles, sucursales, medicos, citas, pacientes
 app = FastAPI()
 
 # CORS
-origins = ["http://localhost:5173"]
+origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

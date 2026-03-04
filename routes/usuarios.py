@@ -51,3 +51,11 @@ async def crear_usuario(
 
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=400)
+    
+@router.get("/")
+async def listar_usuarios():
+    try:
+        res = supabase.table("usuarios").select("*").execute()
+        return res.data or []
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)

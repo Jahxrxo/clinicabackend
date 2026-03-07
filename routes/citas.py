@@ -521,3 +521,33 @@ async def get_all_citas():
     except Exception as e:
         print(f"Error en get_all_citas: {e}")
         return JSONResponse({"error": "Error interno del servidor", "detalle": str(e)}, status_code=500)
+
+
+# ── ENDPOINTS PARA EL DASHBOARD ──────────────────────────────────────────────
+
+@router.get("/citas/count/hoy")
+async def contar_citas_hoy():
+    try:
+        hoy = datetime.now().strftime("%Y-%m-%d")
+        res = supabase.table("citas").select("id", count="exact").eq("fecha", hoy).execute()
+        return {"count": res.count or 0}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@router.get("/citas/count/pendientes")
+async def contar_citas_pendientes():
+    try:
+        res = supabase.table("citas").select("id", count="exact").eq("estado", "pendiente").execute()
+        return {"count": res.count or 0}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@router.get("/citas/count/canceladas")
+async def contar_citas_canceladas():
+    try:
+        res = supabase.table("citas").select("id", count="exact").eq("estado", "cancelada").execute()
+        return {"count": res.count or 0}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)

@@ -51,3 +51,31 @@ async def crear_usuario(
 
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=400)
+
+
+@router.get("/count/pacientes")
+async def contar_pacientes():
+    try:
+        # Busca el rol 'paciente' y cuenta los usuarios con ese rol
+        rol_res = supabase.table("roles").select("id").ilike("nombre", "paciente").execute()
+        if not rol_res.data:
+            return {"count": 0}
+        rol_id = rol_res.data[0]["id"]
+        res = supabase.table("usuarios").select("id", count="exact").eq("rol_id", rol_id).execute()
+        return {"count": res.count or 0}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+
+@router.get("/count/medicos")
+async def contar_medicos():
+    try:
+        # Busca el rol 'medico' y cuenta los usuarios con ese rol
+        rol_res = supabase.table("roles").select("id").ilike("nombre", "medico").execute()
+        if not rol_res.data:
+            return {"count": 0}
+        rol_id = rol_res.data[0]["id"]
+        res = supabase.table("usuarios").select("id", count="exact").eq("rol_id", rol_id).execute()
+        return {"count": res.count or 0}
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=400)

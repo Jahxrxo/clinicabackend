@@ -439,9 +439,39 @@ async def reagendar_cita(
         medico_id = medico_id_param or cita_original["medico_id"] 
         paciente_id = cita_original["paciente_id"]
         estado_original = cita_original["estado"]
-
+        
+        # Validar que la nueva fecha/hora/sucursal sea diferente a la original
+        hora_normalizada = hora[:5] if len(hora) > 5 else hora
+        hora_original = cita_original["hora"][:5] if cita_original.get("hora") else ""
+        if (
+            cita_original["fecha"] == fecha and
+            hora_original == hora_normalizada and
+            str(cita_original["sucursal_id"]) == str(sucursal_id)
+       ):
+            return JSONResponse(
+                {"error": "La nueva cita no puede tener la misma fecha, hora y sucursal que la cita original."},
+                status_code=400
+           )
+        
         if estado_original == "pendiente":
             supabase.table("citas").update({"estado": "cancelada"}).eq("id", cita_id).execute()
+        
+        # Verificar que el slot no esté ya ocupado por otro paciente
+        slot_ocupado = supabase.table("citas") \
+            .select("id") \
+            .eq("medico_id", medico_id) \
+            .eq("sucursal_id", sucursal_id) \
+            .eq("fecha", fecha) \
+            .eq("hora", hora) \
+            .eq("estado", "pendiente") \
+            .execute()
+
+        if slot_ocupado.data:
+            return JSONResponse(
+                {"error": "Ese horario ya está ocupado por otro paciente. Elige una fecha u hora diferente."},
+                status_code=400
+            )
+
 
         # Crear nueva cita
         nueva_cita = {
